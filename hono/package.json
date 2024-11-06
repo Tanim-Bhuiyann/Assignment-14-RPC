@@ -1,0 +1,18 @@
+{
+  "name": "hono",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.0",
+    "hono": "^4.6.9",
+    "uuid": "^11.0.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.27.1",
+    "tsx": "^4.19.2"
+  }
+}
