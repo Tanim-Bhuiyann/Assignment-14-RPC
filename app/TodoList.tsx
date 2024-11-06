@@ -1,92 +1,179 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { X } from "lucide-react"
 
 interface Todo {
-  id: string;
-  title: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  title: string
+  status: 'todo' | 'in-progress' | 'complete'
+  createdAt: string
+  updatedAt: string
 }
 
-export default function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function TodoApp() {
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [newTask, setNewTask] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/todos', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+    fetchTodos()
+  }, [])
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setTodos(Array.isArray(data) ? data : []);
-        setLoading(false);
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : 'Failed to fetch todos';
-          
-        setError(errorMessage);
-        setLoading(false);
-      }
-    };
-
-    fetchTodos();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-pulse text-lg">Loading todos...</div>
-      </div>
-    );
+  const fetchTodos = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("http://localhost:3000/todos")
+      const result = await response.json()
+      setTodos(result)
+    } catch (error) {
+      console.error("Error fetching todos:", error)
+      setError("Failed to fetch todos")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center p-8">
-        <div className="text-red-500 mb-4">Error: {error}</div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Try Again
-        </button>
-      </div>
-    );
+  const addTodo = async () => {
+    if (!newTask.trim()) return
+
+    try {
+      const response = await fetch("http://localhost:3000/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTask }),
+      })
+      const newTodo = await response.json()
+      setTodos(prev => [...prev, newTodo])
+      setNewTask('')
+    } catch (error) {
+      console.error("Error adding todo:", error)
+      setError("Failed to add todo")
+    }
   }
+
+  const updateTodoStatus = async (id: string, currentStatus: string) => {
+    let newStatus: 'todo' | 'in-progress' | 'complete'
+    if (currentStatus === 'todo') newStatus = 'in-progress'
+    else if (currentStatus === 'in-progress') newStatus = 'complete'
+    else return
+
+    try {
+      const response = await fetch(`http://localhost:3000/todos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      const updatedTodo = await response.json()
+      setTodos(prev => prev.map(todo => todo.id === id ? updatedTodo : todo))
+    } catch (error) {
+      console.error("Error updating todo status:", error)
+      setError("Failed to update todo status")
+    }
+  }
+
+  const deleteTodo = async (id: string) => {
+    try {
+      await fetch(`http://localhost:3000/todos/${id}`, {
+        method: "DELETE",
+      })
+      setTodos(prev => prev.filter(todo => todo.id !== id))
+    } catch (error) {
+      console.error("Error deleting todo:", error)
+      setError("Failed to delete todo")
+    }
+  }
+
+  const renderTodoList = (status: 'todo' | 'in-progress' | 'complete') => {
+    const filteredTodos = todos.filter(todo => todo.status === status)
+
+    return (
+      <Card className="w-full min-h-[13rem]">
+        <CardHeader className={`${
+          status === 'todo' 
+            ? 'bg-blue-100' 
+            : status === 'in-progress' 
+              ? 'bg-purple-100' 
+              : 'bg-green-100'
+        }`}>
+          <CardTitle>
+            {status === 'todo' 
+              ? 'To Do' 
+              : status === 'in-progress' 
+                ? 'In Progress' 
+                : 'Completed'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {filteredTodos.map((todo) => (
+            <div key={todo.id} className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                {status !== 'complete' && (
+                  <Checkbox
+                    checked={todo.status === 'in-progress'}
+                    onCheckedChange={() => updateTodoStatus(todo.id, todo.status)}
+                  />
+                )}
+                <span className="font-medium">{todo.title}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => deleteTodo(todo.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (loading) return <p>Loading...</p>
+  if (error) return <p className="text-red-500">{error}</p>
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {todos && todos.length > 0 ? (
-        todos.map((todo) => (
-          <div 
-            key={todo.id} 
-            className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
-          >
-            <h2 className="text-xl font-semibold mb-2">{todo.title}</h2>
-            <div className="text-sm text-gray-500">
-              <p className="mb-1">Status: <span className="font-medium">{todo.status}</span></p>
-              <p>Created: {new Date(todo.createdAt).toLocaleDateString()}</p>
-            </div>
+    <div className="w-full max-w-5xl mx-auto flex items-center min-h-screen justify-center p-4">
+      <div className="flex flex-col shadow-lg p-5 w-full rounded-md">
+        <div className="grid justify-items-center pt-8">
+          <h1 className="text-4xl font-bold">Task Manager</h1>
+          <p className="text-gray-600 pt-3">
+            Stay organized and productive with our intuitive to-do app.
+          </p>
+          <div className="pt-6 flex flex-col md:flex-row items-center gap-4 w-full max-w-xl">
+            <Input
+              type="text"
+              placeholder="Add a new task"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  addTodo()
+                }
+              }}
+              className="w-full"
+            />
+            <Button 
+              onClick={addTodo}
+              disabled={!newTask.trim()}
+            >
+              Add Task
+            </Button>
           </div>
-        ))
-      ) : (
-        <div className="col-span-full text-center text-gray-500 mt-8">
-          No todos found
+          <div className="flex flex-col md:flex-row justify-center items-start gap-6 mt-10 w-full">
+            {renderTodoList('todo')}
+            {renderTodoList('in-progress')}
+            {renderTodoList('complete')}
+          </div>
         </div>
-      )}
+      </div>
     </div>
-  );
+  )
+}

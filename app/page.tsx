@@ -1,4 +1,5 @@
 "use client"
+import TodoApp from "@/components/todo-app";
 import { AppType } from "@/hono/src/index";
 import { hc } from "@/hono/src/index";
 
@@ -42,7 +43,8 @@ export default function Home() {
  */
   return (
     <>
-      <div>
+    <TodoApp/>
+     {/*  <div>
       <h1>Todo List</h1>
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {data.map((todo) => (
@@ -54,7 +56,7 @@ export default function Home() {
           </li>
         ))}
       </ul>
-    </div>
+    </div> */}
     </>
   );
 }

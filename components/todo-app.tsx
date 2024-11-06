@@ -21,9 +21,9 @@ export default function TodoApp() {
   const [newTask, setNewTask] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
-  const baseUrl = "https://todo-crudl.deno.dev"
+  const baseUrl = "http://localhost:3000"
   const userId = "tanim"
-  const url = `${baseUrl}/${userId}/todos`
+  const url = `${baseUrl}/todos`
 
   useEffect(() => {
     loadTodos()
@@ -161,6 +161,7 @@ export default function TodoApp() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   addTodo()
+                 
                 }
               }}
               className="w-full"
