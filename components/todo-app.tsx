@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -19,10 +18,9 @@ interface Todo {
 export default function TodoApp() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [newTask, setNewTask] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
 
   const baseUrl = "http://localhost:3000"
-  const userId = "tanim"
+ 
   const url = `${baseUrl}/todos`
 
   useEffect(() => {
@@ -31,15 +29,11 @@ export default function TodoApp() {
 
   const loadTodos = async () => {
     try {
-      setIsLoading(true)
       const response = await fetch(url)
       const data = await response.json()
-      // Ensure we're getting an array of todos
       setTodos(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Error loading todos:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -55,7 +49,8 @@ export default function TodoApp() {
       const data = await response.json()
       if (response.ok && data) {
         setTodos(prev => [...prev, data])
-        setNewTask('')
+       
+        loadTodos() // Re-render all todos after adding
       }
     } catch (error) {
       console.error("Error adding todo:", error)
@@ -122,9 +117,9 @@ export default function TodoApp() {
           {filteredTodos.map((todo) => (
             <div key={todo.id} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
-                {status !== 'complete' && (
+                {status !=='complete' && (
                   <Checkbox
-                    checked={status === 'in-progress'}
+                   
                     onCheckedChange={() => updateTodoStatus(todo.id, todo.status)}
                   />
                 )}
@@ -161,7 +156,6 @@ export default function TodoApp() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   addTodo()
-                 
                 }
               }}
               className="w-full"
@@ -173,15 +167,11 @@ export default function TodoApp() {
               Add Task
             </Button>
           </div>
-          {isLoading ? (
-            <div className="mt-10 text-center">Loading...</div>
-          ) : (
-            <div className="flex flex-col md:flex-row justify-center items-start gap-6 mt-10 w-full">
-              {renderTodoList('todo')}
-              {renderTodoList('in-progress')}
-              {renderTodoList('complete')}
-            </div>
-          )}
+          <div className="flex flex-col md:flex-row justify-center items-start gap-6 mt-10 w-full">
+            {renderTodoList('todo')}
+            {renderTodoList('in-progress')}
+            {renderTodoList('complete')}
+          </div>
         </div>
       </div>
     </div>

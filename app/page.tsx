@@ -1,16 +1,13 @@
-"use client"
+
+import NewTodoApp from "@/components/new-page";
 import TodoApp from "@/components/todo-app";
-import { AppType } from "@/hono/src/index";
-import { hc } from "@/hono/src/index";
 
-
-import { useEffect, useState } from "react";
 
 
 
 export default function Home() {
 
-  const [data, setData] = useState (null);
+  /* const [data, setData] = useState (null);
   const [loading, setLoading] = useState(true);
  // const client = hc<AppType>("http://localhost:3000/");
 
@@ -35,7 +32,7 @@ export default function Home() {
   console.log("data",data);
   if (loading) return <p>Loading...</p>;
 
-  if (!data || data.length === 0) return <p>No todos available.</p>;
+  if (!data || data.length === 0) return <p>No todos available.</p>; */
 
  /*  const response = await client.todos.$get();
   const data = await response.json();
@@ -43,7 +40,8 @@ export default function Home() {
  */
   return (
     <>
-    <TodoApp/>
+    {/* <TodoApp/> */}
+    <NewTodoApp/>
      {/*  <div>
       <h1>Todo List</h1>
       <ul style={{ listStyleType: "none", padding: 0 }}>

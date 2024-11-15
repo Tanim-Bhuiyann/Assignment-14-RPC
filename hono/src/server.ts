@@ -1,33 +1,30 @@
-import { Hono, type Context } from 'hono';
-import { cors } from "hono/cors";
-import { v4 as uuidv4 } from "uuid";
+
+
+
+
+
+
+
+
+
+
+/* import { v4 as uuidv4 } from "uuid";
 import { usersTable } from "./schema";
 import { db } from "./db";
-import { z } from "zod";
 import { eq } from "drizzle-orm";
-
-const todoSchema = z.object({
-    title: z.string()
-      .min(3, "Title must be at least 3 characters long")
-      .max(12, "Title must not exceed 12 characters"),
-  });
-
+import { Hono, type Context } from 'hono';
+import { cors } from 'hono/cors';
 
 
 const app = new Hono()
-.use('*', cors({
-    origin: '*',
-    allowMethods: ['GET' , 'POST' , 'PUT' , 'DELETE'],
-    allowHeaders: ['Content-Type'],
-    
-}))
+.use('*', cors({ origin: '*' }))
 
-
-.post("/todos", async (c: Context) => {
+  .post("/todos", async (c: Context) => {
     try {
-     
-      const { title } = todoSchema.parse(await c.req.json());
-  
+      const { title } = await c.req.json();
+      if (!title) {
+        throw new Error("Title required");
+      }
       const newTodo = {
         id: uuidv4(),
         title,
@@ -35,20 +32,14 @@ const app = new Hono()
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-  
+
       const todos = await db.insert(usersTable).values(newTodo).returning();
       return c.json(todos);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        
-        return c.json({ error: error.errors.map(e => e.message) }, 400);
-      }
       return c.json({ error: (error as Error).message }, 400);
     }
   })
-
-
-  .get("/todos", async (c: Context) => {
+  .get("/todos", async (c) => {
     try {
       const todos = await db.select().from(usersTable).all();
       return c.json(todos);
@@ -57,9 +48,7 @@ const app = new Hono()
       return c.json({ error: "Failed to fetch todos" }, 500);
     }
   })
-
-
-  .put("/todos/:id", async (c: Context) => {
+  .put("/todos/:id", async (c) => {
     try {
       const id = c.req.param("id");
       const { title, status } = await c.req.json();
@@ -89,8 +78,7 @@ const app = new Hono()
       return c.json({ error: (error as Error).message }, 400);
     }
   })
-
-  .delete("/todos/:id", async (c: Context) => {
+  .delete("/todos/:id", async (c) => {
     try {
       const id = c.req.param("id");
 
@@ -112,8 +100,7 @@ const app = new Hono()
       return c.json({ error: (error as Error).message }, 400);
     }
   })
-
-  .get("/todos/:id", async (c: Context) => {
+  .get("/todos/:id", async (c) => {
     try {
       const id = c.req.param("id");
       const todo = await db
@@ -133,5 +120,8 @@ const app = new Hono()
     }
   });
 
-export default app;
-export type AppType = typeof app;
+  export type AppType = typeof app;
+  export default app;
+
+
+ */
